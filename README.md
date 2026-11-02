@@ -2,15 +2,14 @@
 
 ![Build](https://github.com/wil-li-la/rn-stale-flex-basis-repro/workflows/Pre%20Merge%20Checks/badge.svg)
 
-This is your new React Native Reproducer project.
+Fabric keeps a stale Yoga flex basis when a view's style changes from `width` to `flex: 1`. React Native 0.88.1, New Architecture. See `ReproducerApp/App.tsx`.
 
-# Reproducer TODO list
+Each row starts 360 wide with a 300-wide child. **Shrink rows to 200** shrinks both rows in one commit and changes the children's style:
 
-- [x] 1. Create a new reproducer project.
-- [ ] 2. Git clone your repository locally.
-- [ ] 3. Edit the project to reproduce the failure you're seeing.
-- [ ] 4. Push your changes, so that Github Actions can run the CI.
-- [ ] 5. Make sure the repository is public and share the link with the issue you reported.
+- `width: 300` -> `flex: 1`: the child stays 300 wide and overflows the 200 row (expected 196).
+- `width: 300` -> `width: '100%'` (control): 196, as expected.
+
+Cause: `YogaLayoutableShadowNode::updateYogaProps()` applies the new style with `setStyle()` + `setDirty()`, which keeps Yoga's cached `computedFlexBasis` (Yoga's own setters clear it via `markDirtyAndPropagate()`).
 
 # How to use this Reproducer
 
